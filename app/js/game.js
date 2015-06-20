@@ -42,6 +42,8 @@
 
   };
 
+  // test comment
+
   Game.prototype.addFamily = function(data) {
     this.families.push(new Family({
       name: data.name
