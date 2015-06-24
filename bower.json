@@ -2,6 +2,7 @@
   "name": "zf5_project",
   "dependencies": {
     "foundation": "zurb/bower-foundation",
-    "lodash": "~3.9.3"
+    "lodash": "~3.9.3",
+    "handlebars": "~3.0.3"
   }
 }
