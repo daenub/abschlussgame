@@ -54,10 +54,16 @@
     this.options = $.extend({
       $el: $('#game'),
       currentMonth: 0,
+      maxMonth: 12,
+      MONTHS: MONTHS,
+      $gameControl: $('#game-control'),
     }, options);
 
     this.$el = this.options.$el;
     this.currentMonth = this.options.currentMonth;
+    this.maxMonth = this.options.maxMonth;
+    this.MONTHS = this.options.MONTHS;
+    this.$gameControl = this.options.$gameControl;
 
     this.lists = {
       families: new List({
@@ -71,36 +77,37 @@
     };
 
     this.views = {
-      FamiliesView: new FamilyListView({list: this.lists.families}),
-      StocksView: new StockListView({list: this.lists.stocks})
+      FamiliesView: FamilyListView,
+      StocksView: StockListView,
+      GameControlView: GameControlView,
+      GameInitializeView: GameInitializeView
     };
 
+    // Event listeners
+    // DOM Elements
 
-    this.$el.on('submit', '#add-family', function(e){
-      e.preventDefault();
 
-      self.addFamily({
-        name: e.target.name.value
-      });
 
-      e.target.name.value = '';
-    });
-
-    this.$el.on('submit', '#add-stock', function(e){
-      e.preventDefault();
-
-      self.addStock({
-        name: e.target.name.value
-      });
-
-      e.target.name.value = '';
-    });
+    // Emitter events
 
     this.on('reset', function(e) {
       console.log('reset');
       console.log(e.data);
     });
 
+    this.on('update', function () {
+      self.render();
+    })
+
+    this.on('nextMonth', function(e) {
+      self.nextMonth();
+    });
+
+    this.on('showGameInitializeView', function () {
+      self.showGameInitializeView();
+    })
+
+    this.render();
   };
 
   Emitter(Game.prototype);
@@ -118,8 +125,37 @@
     });
   };
 
-  Game.prototype.triggerEvent = function() {
-    this.emit('reset', {data: "data"});
+  Game.prototype.getCurrentMonth = function() {
+    return this.MONTHS[this.currentMonth];
+  };
+
+  Game.prototype.render = function() {
+    // Render Views:
+
+    
+    var gameControlView = new this.views.GameControlView({model: this});
+    this.$gameControl.html(gameControlView.render());
+  };
+
+  Game.prototype.showGameInitializeView = function() {
+    var gameInitializeView = new this.views.GameInitializeView({model: this});
+    this.$el.html(gameInitializeView.render());
+    var FamiliesView =  new this.views.FamiliesView({list: this.lists.families});
+    var StocksView = new this.views.StocksView({list: this.lists.stocks});
+  };
+
+  
+  Game.prototype.nextMonth = function() {
+    if (this.currentMonth + 1 === this.maxMonth) {
+      this.end();
+    } else {
+      this.currentMonth += 1;
+      this.emit('update');
+    }
+  };
+
+  Game.prototype.end = function() {
+    // body...
   };
 
 
@@ -127,20 +163,58 @@
   //  Game Initialize View
   ////////////////////////
 
-  // GameInitializeView = function() {
-  //   var templateSource = $('#game-initialize-template').html();
-  //   this.template = Handlebars.compile(templateSource);
-  // };
 
-  // GameInitializeView.prototype.render = function() {
-  //   this.template({})
-  // };
+  var GameInitializeView = function (options) {
+
+    this.options = $.extend({
+      $templateElement: $('#game-initialize-template')
+    }, options);
+
+    var templateSource = this.options.$templateElement.html();
+    this.template = Handlebars.compile(templateSource);
+    this.model = options.model;
+    this.$el = null;
+
+  };
+
+  GameInitializeView.prototype.initialize = function() {
+    var self = this;
+    // Event listeners
+    
+    this.$el.on('submit', '#add-family', function(e){
+      e.preventDefault();
+
+      self.model.addFamily({
+        name: e.target.name.value
+      });
+
+      e.target.name.value = '';
+    });
+
+    this.$el.on('submit', '#add-stock', function(e){
+      e.preventDefault();
+
+      self.model.addStock({
+        name: e.target.name.value
+      });
+
+      e.target.name.value = '';
+    });
+
+  };
+
+  GameInitializeView.prototype.render = function() {
+    this.$el = $(this.template());
+    this.initialize();
+
+    return this.$el;
+  };
 
   // ////////////////////////
   // //  Game  View
   // ////////////////////////
 
-  // GameInitializeView = function() {
+  // var GameInitializeView = function() {
   //   var templateSource = $('#game-initialize-template').html();
   //   this.template = Handlebars.compile(templateSource);
   // };
@@ -149,6 +223,43 @@
   //   this.template({})
   // };
 
+  ////////////////////////
+  //  Game Control View
+  ////////////////////////
+
+  var GameControlView = function (options) {
+
+    this.options = $.extend({
+      $templateElement: $('#game-control-template')
+    }, options);
+
+    var templateSource = this.options.$templateElement.html();
+    this.template = Handlebars.compile(templateSource);
+    this.model = options.model;
+    this.$el = null;
+
+  };
+
+  GameControlView.prototype.initialize = function() {
+    var self = this;
+    // Event listeners
+
+    this.$el.find('#next-month').on('click', function() {
+      self.model.emit('nextMonth');
+    });
+
+    this.$el.find('#show-init-view').on('click', function() {
+      self.model.emit('showGameInitializeView');
+    });
+
+  };
+
+  GameControlView.prototype.render = function() {
+    this.$el = $(this.template({currentMonth: this.model.getCurrentMonth()}));
+    this.initialize();
+
+    return this.$el;
+  };
 
 
   ////////////////////////
@@ -184,7 +295,7 @@
     var self = this;
 
     this.list = options.list
-    this.$el = $("#familyList");
+    this.$el = $("#family-list");
 
     // render the view when the list is reset or has added a new object
     this.list.on('reset', function(){
@@ -241,7 +352,7 @@
     var self = this;
 
     this.list = options.list
-    this.$el = $('#stockList');
+    this.$el = $('#stock-list');
 
     // render the view when the list is reset or has added a new object
     this.list.on('reset', function(){
