@@ -1,3 +1,7 @@
-## zf5_project
+## Abschlussgame
 
-(place your readme here)
+Install packages:  
+``npm install & bower install``
+
+Run watcher:  
+``grunt``
