@@ -18,17 +18,29 @@
   </head>
   <body>
 
-    <div class="row" id="game">
+    <div class="row" id="">
       <div class="small-12 small-centered medium-10 medium-centered columns panel radius">
         <h1>Abschlussgame</h1>
 
-        <div id="gameControls">
+        <div id="game-control">
 
+        </div>
+
+        <div id="game">
         </div>
 
         <hr>
         <h4 id="forms">Forms</h4>
 
+
+      </div>
+    </div>
+
+
+    <!-- Template Handlebars -->
+
+    <script id="game-initialize-template" type="text/x-handlebars-template">
+        <div>
         <form id="add-family">
             <fieldset>
                 <legend>Add Family</legend>
@@ -36,15 +48,17 @@
                 <div class="row">
                     <div class="large-12 columns">
                         <label>Family Name</label>
-                        <input type="text" name="name" placeholder="Name">
+                        <input type="text" name="name"  placeholder="Name">
                         <input type="submit" class="button tiny" name="submit" value="Add" />
                     </div>
                 </div>
-
+                <ul id="family-list"></ul>
             </fieldset>
+            
         </form>
 
         <form id="add-stock">
+
             <fieldset>
                 <legend>Add Stock</legend>
 
@@ -55,22 +69,24 @@
                         <input type="submit" class="button tiny" name="submit" value="Add" />
                     </div>
                 </div>
-
+                <ul id="stock-list"></ul>
             </fieldset>
+
         </form>
+        </div>
+    </script>
 
-        <ul id="familyList"></ul>
-        <ul id="stockList"></ul>
+    <script id="game-control-template" type="text/x-handlebars-template">
 
-      </div>
-    </div>
-
-
-    <!-- Template Handlebars -->
-
-    <script id="game-initialize-template" type="text/x-handlebars-template">
+        <fieldset>
+            <legend>Game Control</legend>
+            <p>Current month: {{ currentMonth }}</p>
+            <button class="button tiny" id="next-month">Next month</button>
+            <button class="button tiny" id="show-init-view">Show init view</button>
+        </fieldset>
 
     </script>
+
 
 
     <!-- build:js js/vendor/libraries.min.js -->
@@ -79,7 +95,7 @@
     <script src="bower_components/fastclick/lib/fastclick.js"></script>
     <script src="bower_components/jquery.cookie/jquery.cookie.js"></script>
     <script src="bower_components/lodash/lodash.js"></script>
-    <script src="bower_components/handlebars/handlebars.min.js"></script>
+    <script src="bower_components/handlebars/handlebars.js"></script>
     <script src="js/emitter.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
