@@ -20,9 +20,6 @@ var Stock = function(options){
 Stock.prototype.buy = function(amount, family) {
 	var familyPos = -1;
 	var hasEnoughCash = false, hasEnoughShares = false;
-
-	console.log("D1:" + this.getAllSoldShares() +  "\n");
-	console.log("D2:" + family.cash +  "\n");
 	// enough shares?
 	if(amount <=  this.shareAmount - this.getAllSoldShares()){
 		hasEnoughShares = true;
@@ -66,7 +63,8 @@ Stock.prototype.sell = function(amount, family) {
 		// sell all requested shares
 		this.stakeHolders[familyPos].amount -= amount;
 		family.cash += amount * this.price;
-		console.log("Sale was successful.\n");
+		this.shareFlow -= amount;
+		console.log("Sale was successful." + "\n");
 	} else {
 		console.error("Not enough shares to sell.\n");
 	}
@@ -75,11 +73,21 @@ Stock.prototype.sell = function(amount, family) {
 };
 
 Stock.prototype.calcCurrentSharePrice = function() {
-	// get the three different factors and calc the average 
-	shareFactor = (this.calcRandomFactor() + this.calcGameFactor(200, 600) + this.calcShareFlowFactor()) / 3;
+	// get the three different factors
+	random = this.calcRandomFactor();
+	game = this.calcGameFactor(200, 800);
+	flow = this.calcShareFlowFactor();
+	// calc average over the three factors
+	shareFactor = (random + game  + flow) / 3;	
+
+	console.log("Random: " + random);
+	console.log("Game: " + game);
+	console.log("FlowFactor: " + flow);
+
 	console.log(shareFactor);
+
 	// calc new stock price
-	this.price += this.price * (shareFactor / 80);
+	this.price += this.price * (shareFactor / 100);
 	this.price = Math.round(this.price);
 	// add new price to progression
 	this.progression.push(this.price);
@@ -89,7 +97,7 @@ Stock.prototype.calcCurrentSharePrice = function() {
 
 Stock.prototype.calcRandomFactor = function() {
 	var randomFactor = Math.random() * 20;
-	randomFactor = Math.floor(randomFactor) - 10;
+	randomFactor = Math.round(randomFactor) - 10;
 	return randomFactor;
 };
 
@@ -102,17 +110,18 @@ Stock.prototype.calcGameFactor = function(minWin, maxWin) {
 		gameFactor += el.family.lastIncome * el.amount;
 	});
 	gameFactor = gameFactor - minWin * allSoldShares;
-	return (gameFactor * 10 / zeroFactor) - 10;
+	return Math.round((gameFactor * 10 / zeroFactor) - 10);
 };
 
 Stock.prototype.calcShareFlowFactor = function() {
-	return this.shareFlow * 10 / this.shareAmount;
+	var shareFlow_d = this.shareFlow * 10 / this.shareAmount;
+	return Math.round(this.shareFlow * 10 / this.shareAmount);
 	// body...
-};
+}; 
 
 Stock.prototype.getShareValue = function(family) {
 	return this.getSoldSharesByFamily(family) * this.price;
-};
+};	
 
 /*
  * return sold shares for one family.
@@ -202,16 +211,16 @@ var google = new Stock({
 
 google.buy(1, hitz);
 google.buy(3, bueschlen);
-google.buy(10, stutz);
+google.buy(40, stutz);
 google.buy(5, kleiner);
 
 google.calcCurrentSharePrice()
 console.log("New Price: " + google.progression);
 
-stutz.lastIncome = 200;
+stutz.lastIncome = 800;
 bueschlen.lastIncome = 600;
 kleiner.lastIncome = 400;
-hitz.lastIncome = 800;
+hitz.lastIncome = 200;
 
 google.buy(5, hitz);
 google.buy(2, bueschlen);
@@ -221,30 +230,30 @@ google.buy(2, kleiner);
 google.calcCurrentSharePrice()
 console.log("New Price: " + google.progression);
 
-stutz.lastIncome = 400;
-bueschlen.lastIncome = 800;
+stutz.lastIncome = 800;
+bueschlen.lastIncome = 600;
 kleiner.lastIncome = 200;
-hitz.lastIncome = 600;
+hitz.lastIncome = 400;
 
 google.sell(4, hitz);
 google.sell(4, bueschlen);
-google.sell(24, stutz);
-google.buy(20, kleiner);
+google.sell(58, stutz);
+google.sell(7, kleiner);
 
 google.calcCurrentSharePrice()
 console.log("New Price: " + google.progression);
 
-stutz.lastIncome = 200;
+stutz.lastIncome = 800;
 bueschlen.lastIncome = 400;
 kleiner.lastIncome = 600;
-hitz.lastIncome = 800;
+hitz.lastIncome = 200;
 
 google.sell(2, hitz);
 google.buy(8, bueschlen);
 google.buy(20, stutz);
-google.sell(10, kleiner);
+google.buy(2, kleiner);
 
 google.calcCurrentSharePrice()
-
+console.log("New Price: " + google.progression);
 
 }());
