@@ -196,6 +196,10 @@
     // Event listeners
     // DOM Elements
 
+    $(window).bind('beforeunload',function(){
+      return 'DO NOT RELOAD!';
+    });
+
 
 
     // Emitter events
@@ -413,7 +417,10 @@
     // Event listeners
 
     this.$el.find('#next-month').on('click', function() {
-      self.model.emit('nextMonth');
+      var conf = confirm("Are you sure?");
+      if (conf == true) {
+          self.model.emit('nextMonth');
+      }
     });
 
     this.$el.find('#show-init-view').on('click', function() {
