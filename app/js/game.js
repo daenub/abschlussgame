@@ -289,12 +289,25 @@
 
   
   Game.prototype.nextMonth = function() {
+    var lastIncomes,
+        gameFactorMaxWin = 0,
+        gameFactorMinWin = 0;
+
     if (this.currentMonth + 1 === this.maxMonth) {
       this.end();
     } else {
 
+      lastIncomes = this.lists.families.objects.map(function(family){
+        return family.lastIncome;
+      });
+
+      if(lastIncomes.length > 0) {
+        gameFactorMaxWin = Math.max.apply(Math, lastIncomes);
+        gameFactorMinWin = Math.min.apply(Math, lastIncomes);
+      }
+
       this.lists.stocks.objects.forEach(function(stock){
-        stock.calcCurrentSharePrice();
+        stock.calcCurrentSharePrice(gameFactorMinWin, gameFactorMaxWin);
       });
 
       this.lists.families.objects.forEach(function(family){
@@ -845,19 +858,22 @@
     return status;
   };
 
-  Stock.prototype.calcCurrentSharePrice = function() {
-    // get the three different factors
+  Stock.prototype.calcCurrentSharePrice = function(gameFactorMinWin, gameFactorMaxWin) {
+        // get the three different factors
     var random = this.calcRandomFactor(),
-        game = this.calcGameFactor(200, 800),
+        game = this.calcGameFactor(gameFactorMinWin, gameFactorMaxWin),
         flow = this.calcShareFlowFactor(),
         // calc average over the three factors
-        shareFactor = (random + game  + flow) / 3;  
+        shareFactor = random + game  + flow;  
 
+
+    
+    console.log(this.name);
     console.log('Random: ' + random);
     console.log('Game: ' + game);
     console.log('FlowFactor: ' + flow);
-
-    console.log(shareFactor);
+    console.log('ShareFactor: ' + shareFactor);
+    console.log('----');
 
     // calc new stock price
     this.price += this.price * (shareFactor / 100);
