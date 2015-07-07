@@ -731,9 +731,6 @@
     this.model.cash += salary;
     this.model.lastIncome += salary;
 
-    // add emitter events to Family class
-    this.model.emit('update');
-
     utils.showAlert($(data.el), 'The salary ('+ salary +' CHF) was payed successfully', 'success');
   };
 
