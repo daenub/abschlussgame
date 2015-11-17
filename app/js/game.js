@@ -1,7 +1,7 @@
 'use strict';
 
 (function(window){
-  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var MONTHS = ['August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July'];
 
   var utils = {
     alertTemplate: Handlebars.compile($('#alert-template').html()),
@@ -88,22 +88,32 @@
       this.emit('add');
     }
 
-    object.on('update', function () {
+    /*object.on('update', function () {
       self.localStorage.setItem(object);
-    });
+    });*/
 
   };
 
-  List.prototype.orderByMethod = function(methodName) {
+  List.prototype.orderByMethod = function(methodName, desc) {
     var orderedObjects = this.objects;
+
+    desc = desc || false;
 
     orderedObjects.sort(function(a, b){
       
       if (a[methodName]() > b[methodName]()) {
+        if(desc) {
+          return -1;
+        }
+
         return 1;
       }
 
       if (a[methodName]() < b[methodName]()) {
+        if(desc) {
+          return 1;
+        }
+
         return -1;
       }
 
@@ -147,6 +157,29 @@
   };
   
 
+  ////////////////////////
+  //  Model
+  ////////////////////////
+
+  var Model = function () {
+
+  };
+
+  Emitter(Model.prototype);
+
+  Model.prototype.set = function(attribute, value, silent) {
+    silent = silent || false;
+
+    this[attribute] = value;
+    
+    if(!silent) {
+      this.emit('update');
+    }
+  };
+
+  Model.prototype.get = function(attribute) {
+    return this[attribute];
+  };
 
 
   ////////////////////////
@@ -459,7 +492,7 @@
       id: _.uniqueId(),
       name: 'Name',
       stocks: [],
-      cash: 5000,
+      cash: 0,
       lastIncome: 0,
       tagName: 'li'
     }, options);
@@ -472,8 +505,8 @@
     this.tagName = this.options.tagName;
   };
 
-  // add emitter events to Family class
-  Emitter(Family.prototype);
+  // inherit from Model class.
+  Family.prototype = Object.create(Model.prototype);
 
   Family.prototype.getAsset = function() {
     var asset = 0,
@@ -485,7 +518,7 @@
       asset += obj.stock.getShareValue(self);
     });
 
-    asset = Math.round(asset * 20) / 20
+    asset = Math.round(asset * 20) / 20;
     return asset;
   };
 
@@ -505,6 +538,7 @@
       }
 
       this.stocks[stockPos].amount += data.amount;
+      this.emit('update');
     }
 
     return status;
@@ -578,7 +612,7 @@
   };
 
   FamilyRankingView.prototype.render = function() {
-    var list = this.list.orderByMethod('getAsset');
+    var list = this.list.orderByMethod('getAsset', true);
     this.$el = $(this.template({families: list}));
 
     return this.$el;
@@ -595,15 +629,18 @@
     this.list = options.list;
     this.stocks = options.stocks;
     this.$el = null;
+    this.$familyList = null;
   };
 
   FamilyDetailListView.prototype.initialize = function() {
     var familyDetailView,
         self = this;
 
+    this.$familyList = this.$el.find('.family-list')
+
     this.list.objects.forEach(function(family){
       familyDetailView = new FamilyDetailView({model: family, stocks: self.stocks});
-      self.$el.append(familyDetailView.render());
+      self.$familyList.append(familyDetailView.render());
     });
   };
 
@@ -634,6 +671,7 @@
         pieSeries,
         pieShareAmounts,
         $pieLegend;
+        
 
     // open buy dialog
     this.$el.on('click', '.buy', function(){
@@ -705,7 +743,7 @@
       series: pieSeries
     }, {
       chartPadding: 30,
-      labelOffset: 50,
+      labelOffset: 40,
       labelDirection: 'explode'
     });
 
@@ -772,11 +810,12 @@
   ////////////////////////
 
   var Stock = function(options){
-    var startPrice = Math.random() * 100;
+    var startPrice = 80;
+
     this.options = $.extend({
       id: _.uniqueId(),
       name: '',
-      shareAmount: 100,
+      shareAmount: 1000,
       price: startPrice,
       stakeholders: [],
       progression: [startPrice],
@@ -794,8 +833,8 @@
     this.tagName = this.options.tagName;
   };
 
-  // add emitter events to Stock class
-  Emitter(Stock.prototype);
+  // inherit from Model class.
+  Stock.prototype = Object.create(Model.prototype);
 
   Stock.prototype.buy = function(amount, family) {
     var familyPos = -1,

@@ -114,7 +114,7 @@
             <hr>
             <h4>Family Detail List</h4>
 
-            <ul name="families" class="family-list small-block-grid-2">
+            <ul class="family-list small-block-grid-2">
             </ul>
 
             
@@ -123,16 +123,19 @@
 
     <script id="family-detail-template" type="text/x-handlebars-template">
         <li class="family">
-            {{family.name}}
+            <h5>{{family.name}}</h5>
             <ul class="ct-legend">
                 <li>Asset: {{asset}} CHF</li>
             </ul>
 
             <div class="pie-chart">
             </div>
+
+            <div class="clearfix">
             <i class="buy fi-plus"></i>
             <i class="sell fi-minus"></i>
-            <i class="salary fi-dollar"></i>
+            <i class="salary fi-dollar right"></i>
+            </div>
 
             <div class="reveal-modal buy-modal" data-reveal>
                 <h2 id="modalTitle">Buy</h2>
